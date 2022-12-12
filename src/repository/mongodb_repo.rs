@@ -10,7 +10,7 @@ use mongodb::{
 };
 
 pub struct MongoRepo {
-    col: Collection<User>,
+    user_model: Collection<User>,
 }
 
 impl MongoRepo {
@@ -22,8 +22,8 @@ impl MongoRepo {
         };
         let client = Client::with_uri_str(uri).unwrap();
         let db = client.database("rustDB");
-        let col: Collection<User> = db.collection("User");
-        MongoRepo { col }
+        let user_model: Collection<User> = db.collection("User");
+        MongoRepo { user_model }
     }
 
     pub fn create_user(&self, new_user: User) -> Result<InsertOneResult, Error> {
@@ -34,7 +34,7 @@ impl MongoRepo {
             title: new_user.title,
         };
         let user = self
-            .col
+            .user_model
             .insert_one(new_doc, None)
             .ok()
             .expect("Error creating user");
@@ -45,7 +45,7 @@ impl MongoRepo {
         let obj_id = ObjectId::parse_str(id).unwrap();
         let filter = doc! {"_id": obj_id};
         let user_detail = self
-            .col
+            .user_model
             .find_one(filter, None)
             .ok()
             .expect("Error getting user's detail");
@@ -65,7 +65,7 @@ impl MongoRepo {
                 },
         };
         let updated_doc = self
-            .col
+            .user_model
             .update_one(filter, new_doc, None)
             .ok()
             .expect("Error updating user");
@@ -76,7 +76,7 @@ impl MongoRepo {
         let obj_id = ObjectId::parse_str(id).unwrap();
         let filter = doc! {"_id": obj_id};
         let user_detail = self
-            .col
+            .user_model
             .delete_one(filter, None)
             .ok()
             .expect("Error deleting user");
@@ -85,7 +85,7 @@ impl MongoRepo {
 
     pub fn get_all_users(&self) -> Result<Vec<User>, Error> {
         let cursors = self
-            .col
+            .user_model
             .find(None, None)
             .ok()
             .expect("Error getting list of users");
